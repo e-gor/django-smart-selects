@@ -13,6 +13,7 @@ setup(name="django-smart-selects",
       url="https://github.com/digi604/django-smart-selects",
       packages=find_packages(),
       include_package_data=True,
+      install_requires=["django>=1.8, <3.1", "six"],
       tests_require=[
           'flake8',
       ],

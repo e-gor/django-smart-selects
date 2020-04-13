@@ -12,12 +12,13 @@ class ChainedModelChoiceField(ModelChoiceField):
     def __init__(self, to_app_name, to_model_name, chained_field, chained_model_field,
                  foreign_key_app_name, foreign_key_model_name, foreign_key_field_name,
                  show_all, auto_choose, sort=True, manager=None, initial=None, view_name=None,
-                 *args, **kwargs):
+                 display_field=None, *args, **kwargs):
 
+        self.display_field=display_field
         defaults = {
             'widget': ChainedSelect(to_app_name, to_model_name, chained_field, chained_model_field,
                                     foreign_key_app_name, foreign_key_model_name, foreign_key_field_name,
-                                    show_all, auto_choose, sort, manager, view_name),
+                                    show_all, auto_choose, sort, display_field, manager, view_name),
         }
         defaults.update(kwargs)
         if 'queryset' not in kwargs:
@@ -28,7 +29,20 @@ class ChainedModelChoiceField(ModelChoiceField):
 
     def _get_choices(self):
         self.widget.queryset = self.queryset
-        choices = super(ChainedModelChoiceField, self)._get_choices()
+        #choices = super(ChainedModelChoiceField, self)._get_choices()
+        choices=[]
+        for obj in self.queryset:
+            if hasattr(obj, '_meta'):
+                if hasattr(self,'to_field_name'):
+                    ch_pk=obj.serializable_value(self.to_field_name)
+                else:
+                    ch_pk=obj.pk
+            else:
+                ch_pk=super().prepare_value(obj)
+            if self.display_field!=None:
+                choices.append((ch_pk, getattr(obj, self.display_field)))
+            else:
+                choices.append((ch_pk, self.label_from_instance(obj)))
         return choices
     choices = property(_get_choices, ChoiceField._set_choices)
 

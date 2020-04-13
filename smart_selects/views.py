@@ -63,7 +63,7 @@ def do_filter(qs, keywords, exclude=False):
 
 @never_cache
 def filterchain(request, app, model, field, foreign_key_app_name, foreign_key_model_name,
-                foreign_key_field_name, value, manager=None):
+                foreign_key_field_name, display_field, value, manager=None):
     model_class = get_model(app, model)
     m2m = is_m2m(model_class, field)
     keywords = get_keywords(field, value, m2m=m2m)
@@ -86,13 +86,13 @@ def filterchain(request, app, model, field, foreign_key_app_name, foreign_key_mo
         results = list(results)
         sort_results(results)
 
-    serialized_results = serialize_results(results)
+    serialized_results = serialize_results(results, display_field)
     return JsonResponse(serialized_results, safe=False)
 
 
 @never_cache
 def filterchain_all(request, app, model, field, foreign_key_app_name,
-                    foreign_key_model_name, foreign_key_field_name, value):
+                    foreign_key_model_name, foreign_key_field_name, display_field, value):
     """Returns filtered results followed by excluded results below."""
     model_class = get_model(app, model)
     keywords = get_keywords(field, value)
@@ -122,9 +122,9 @@ def filterchain_all(request, app, model, field, foreign_key_app_name,
     empty_choice = {'value': "", 'display': "---------"}
 
     serialized_results = (
-        serialize_results(filtered) +
+        serialize_results(filtered, display_field) +
         [empty_choice] +
-        serialize_results(excluded)
+        serialize_results(excluded, display_field)
     )
 
     return JsonResponse(serialized_results, safe=False)

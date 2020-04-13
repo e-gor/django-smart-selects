@@ -50,10 +50,15 @@ def get_queryset(model_class, manager=None, limit_choices_to=None):
     return queryset
 
 
-def serialize_results(results):
-    return [
-        {'value': item.pk if str(item.pk).isdigit() else str(item.pk), 'display': force_text(item)} for item in results
-    ]
+def serialize_results(results, display_field='None'):
+    serialized_results=[]
+    for item in results:
+        if display_field != 'None':
+            display_text = getattr(item,display_field)
+        else:
+            display_text = force_text(item)
+        serialized_results.append({'value': item.pk if str(item.pk).isdigit() else str(item.pk), 'display': display_text})
+    return serialized_results
 
 
 def get_keywords(field, value, m2m=False):

@@ -144,7 +144,7 @@ class ChainedForeignKey(IntrospectiveFieldMixin, ForeignKey):
     chains the choices of a previous combo box with this one
     """
     def __init__(self, to, chained_field=None, chained_model_field=None,
-                 show_all=False, auto_choose=False, sort=True, view_name=None, **kwargs):
+                 show_all=False, auto_choose=False, sort=True, view_name=None, display_field=None, **kwargs):
         """
         examples:
 
@@ -186,6 +186,7 @@ class ChainedForeignKey(IntrospectiveFieldMixin, ForeignKey):
         self.auto_choose = auto_choose
         self.sort = sort
         self.view_name = view_name
+        self.display_field = display_field
         if kwargs:
             kwargs['on_delete'] = kwargs.get('on_delete', models.CASCADE)
         else:
@@ -204,6 +205,7 @@ class ChainedForeignKey(IntrospectiveFieldMixin, ForeignKey):
             'auto_choose': False,
             'sort': True,
             'view_name': None,
+            'display_field': None,
         }
 
         # Maps attribute names to their __init__ kwarg names.
@@ -214,6 +216,7 @@ class ChainedForeignKey(IntrospectiveFieldMixin, ForeignKey):
             'auto_choose': 'auto_choose',
             'sort': 'sort',
             'view_name': 'view_name',
+            'display_field': 'display_field',
         }
 
         for name, default in defaults.items():
@@ -250,6 +253,7 @@ class ChainedForeignKey(IntrospectiveFieldMixin, ForeignKey):
             'auto_choose': self.auto_choose,
             'sort': self.sort,
             'view_name': self.view_name,
+            'display_field': self.display_field,
             'foreign_key_app_name': foreign_key_app_name,
             'foreign_key_model_name': foreign_key_model_name,
             'foreign_key_field_name': foreign_key_field_name,

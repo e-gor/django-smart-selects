@@ -55,7 +55,7 @@ class JqueryMediaMixin(object):
 class ChainedSelect(JqueryMediaMixin, Select):
     def __init__(self, to_app_name, to_model_name, chained_field, chained_model_field,
                  foreign_key_app_name, foreign_key_model_name, foreign_key_field_name,
-                 show_all, auto_choose, sort=True, manager=None, view_name=None, *args, **kwargs):
+                 show_all, auto_choose, sort=True, display_field=None, manager=None, view_name=None, *args, **kwargs):
         self.to_app_name = to_app_name
         self.to_model_name = to_model_name
         self.chained_field = chained_field
@@ -63,6 +63,7 @@ class ChainedSelect(JqueryMediaMixin, Select):
         self.show_all = show_all
         self.auto_choose = auto_choose
         self.sort = sort
+        self.display_field = display_field
         self.manager = manager
         self.view_name = view_name
         self.foreign_key_app_name = foreign_key_app_name
@@ -100,6 +101,7 @@ class ChainedSelect(JqueryMediaMixin, Select):
             'foreign_key_app_name': self.foreign_key_app_name,
             'foreign_key_model_name': self.foreign_key_model_name,
             'foreign_key_field_name': self.foreign_key_field_name,
+            'display_field': self.display_field,
             'value': '1'
             }
         if self.manager is not None:
@@ -144,6 +146,7 @@ class ChainedSelect(JqueryMediaMixin, Select):
         attrs["data-auto_choose"] = auto_choose
         attrs["data-empty_label"] = escape(empty_label)
         attrs["name"] = name
+        attrs["data-display_field"] = self.display_field
         final_attrs = self.build_attrs(attrs)
         if 'class' in final_attrs:
             final_attrs['class'] += ' chained-fk'

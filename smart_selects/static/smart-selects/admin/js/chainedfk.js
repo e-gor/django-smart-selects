@@ -78,28 +78,54 @@ var chainedfk =  {
     init: function (chainfield, url, id, init_value, empty_label, auto_choose) {
         var val, fill_field = this.fill_field;
 
-        if (!$(chainfield).hasClass("chained")) {
-            val = $(chainfield).val();
+        var chainfield_new;
+        if (chainfield.replace('__prefix__').includes("__"))
+        {
+            chainfield_new='#id_'+chainfield.replace('__prefix__').substr(chainfield.replace('__prefix__').indexOf('__')+2);
+        }
+        else
+        {
+            chainfield_new=chainfield;
+        }
+
+        if (!$(chainfield_new).hasClass("chained")) {
+            val = $(chainfield_new).val();
+            if (val==='')
+            {
+                val="ALL";
+            }
             fill_field(val, init_value, id, url, empty_label, auto_choose);
         }
-        $(chainfield).change(function () {
+        $(chainfield_new).change(function () {
             // Handle the case of inlines, where the ID will depend on which list item we are dealing with
             var prefix, start_value, this_val, localID = id;
             if (localID.indexOf("__prefix__") > -1) {
-                prefix = $(this).attr("id").match(/\d+/)[0];
-                localID = localID.replace("__prefix__", prefix);
+                prefix = $(this).attr("id").match(/\d+/)
+                if (prefix!=null)
+                {
+                    prefix=prefix[0];
+                    localID = localID.replace("__prefix__", prefix);
+                }
+                else
+                {
+                    localID = localID.replace("__prefix__", '0');
+                }
             }
 
             start_value = $(localID).val();
             this_val = $(this).val();
+            if (this_val==='')
+            {
+                this_val="ALL";
+            }
             fill_field(this_val, start_value, localID, url, empty_label, auto_choose);
         });
         if (typeof(dismissAddAnotherPopup) !== 'undefined') {
             var oldDismissAddAnotherPopup = dismissAddAnotherPopup;
             dismissAddAnotherPopup = function (win, newId, newRepr) {
                 oldDismissAddAnotherPopup(win, newId, newRepr);
-                if (windowname_to_id(win.name) === chainfield) {
-                    $(chainfield).change();
+                if (windowname_to_id(win.name) === chainfield_new) {
+                    $(chainfield_new).change();
                 }
             };
         }

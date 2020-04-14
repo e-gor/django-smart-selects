@@ -236,7 +236,10 @@ class ChainedForeignKey(IntrospectiveFieldMixin, ForeignKey):
     def formfield(self, **kwargs):
         foreign_key_app_name = self.model._meta.app_label
         foreign_key_model_name = self.model._meta.object_name
-        foreign_key_field_name = self.name
+        if '__' in self.chained_model_field:
+            foreign_key_field_name = self.chained_model_field
+        else:
+            foreign_key_field_name = self.name
         defaults = {
             'form_class': form_fields.ChainedModelChoiceField,
             'queryset': (self.rel.to._default_manager.complex_filter(

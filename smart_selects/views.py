@@ -67,9 +67,15 @@ def filterchain(request, app, model, field, foreign_key_app_name, foreign_key_mo
     model_class = get_model(app, model)
     m2m = is_m2m(model_class, field)
     if '__' in field:
-        keywords = get_keywords(field[field.find('__')+2:], value, m2m=m2m)
+        if value!='ALL':
+            keywords = get_keywords(field[field.find('__')+2:], value, m2m=m2m)
+        else:
+            keywords = {}
     else:
-        keywords = get_keywords(field, value, m2m=m2m)
+        if value!='ALL':
+            keywords = get_keywords(field, value, m2m=m2m)
+        else:
+            keywords = {}
 
     # SECURITY: Make sure all smart selects requests are opt-in
     foreign_model_class = get_model(foreign_key_app_name, foreign_key_model_name)
@@ -82,14 +88,14 @@ def filterchain(request, app, model, field, foreign_key_app_name, foreign_key_mo
     limit_choices_to = get_limit_choices_to(foreign_key_app_name, foreign_key_model_name, foreign_key_field_name)
     queryset = get_queryset(model_class, manager, limit_choices_to)
 
-    #results = do_filter(queryset, keywords)
-    results=queryset.all()
+    results = do_filter(queryset, keywords)
+    '''results=queryset.all()
     filtered_results=[]
     for result in results:
         for keyword, value in iteritems(keywords):
             if value=='ALL' or (hasattr(result,keyword) and getattr(result,keyword)!=None and str(getattr(result,keyword).id)==value):
                 filtered_results.append(result)
-    results=filtered_results
+    results=filtered_results'''
 
     # Sort results if model doesn't include a default ordering.
     if not getattr(model_class._meta, 'ordering', False):

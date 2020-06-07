@@ -6,6 +6,7 @@ from django.utils.encoding import force_text
 
 get_model = apps.get_model
 
+cached_choices={}
 
 class ChainedModelChoiceField(ModelChoiceField):
 
@@ -14,6 +15,13 @@ class ChainedModelChoiceField(ModelChoiceField):
                  show_all, auto_choose, sort=True, manager=None, initial=None, view_name=None,
                  display_field=None, *args, **kwargs):
 
+        self.to_app_name=to_app_name
+        self.to_model_name=to_model_name
+        self.chained_field=chained_field
+        self.chained_model_field=chained_model_field
+        self.foreign_key_app_name=foreign_key_app_name
+        self.foreign_key_model_name=foreign_key_model_name
+        self.foreign_key_field_name=foreign_key_field_name
         self.display_field=display_field
         defaults = {
             'widget': ChainedSelect(to_app_name, to_model_name, chained_field, chained_model_field,
@@ -30,20 +38,34 @@ class ChainedModelChoiceField(ModelChoiceField):
     def _get_choices(self):
         self.widget.queryset = self.queryset
         #choices = super(ChainedModelChoiceField, self)._get_choices()
-        choices=[]
-        for obj in self.queryset:
-            if hasattr(obj, '_meta'):
-                if hasattr(self,'to_field_name'):
-                    ch_pk=obj.serializable_value(self.to_field_name)
+        cached_key='#'.join([
+            self.to_app_name,
+            self.to_model_name,
+            self.chained_field,
+            self.chained_model_field,
+            self.foreign_key_app_name,
+            self.foreign_key_model_name,
+            self.foreign_key_field_name,
+            self.display_field
+        ])
+        if cached_key in cached_choices:
+            return cached_choices[cached_key]
+        else:
+            choices=[]
+            for obj in self.queryset:
+                if hasattr(obj, '_meta'):
+                    if hasattr(self,'to_field_name'):
+                        ch_pk=obj.serializable_value(self.to_field_name)
+                    else:
+                        ch_pk=obj.pk
                 else:
-                    ch_pk=obj.pk
-            else:
-                ch_pk=super().prepare_value(obj)
-            if self.display_field!=None:
-                choices.append((ch_pk, getattr(obj, self.display_field)))
-            else:
-                choices.append((ch_pk, self.label_from_instance(obj)))
-        return choices
+                    ch_pk=super().prepare_value(obj)
+                if self.display_field!=None:
+                    choices.append((ch_pk, getattr(obj, self.display_field)))
+                else:
+                    choices.append((ch_pk, self.label_from_instance(obj)))
+            cached_choices[cached_key]=choices
+            return choices
     choices = property(_get_choices, ChoiceField._set_choices)
 
 
